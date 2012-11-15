@@ -1,10 +1,11 @@
+using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 namespace Untappd.Api.Models
 {
-    public class TargetUser
+    public class Actor
     {
-        [JsonProperty("")]
+        [DataMember(Name = "uid")]
         public int Uid { get; set; }
 
         [JsonProperty("user_name")]
@@ -28,10 +29,7 @@ namespace Untappd.Api.Models
         [JsonProperty("user_avatar")]
         public string UserAvatar { get; set; }
 
-        [JsonProperty("account_type")]
-        public string AccountType { get; set; }
-
         [JsonProperty("contact")]
-        public Contact Contact { get; set; }
+        public object Contact { get; set; }
     }
 }

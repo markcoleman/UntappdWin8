@@ -1,7 +1,10 @@
+using Newtonsoft.Json;
+
 namespace Untappd.Api.Models
 {
     public class RemoveFriendResponse
     {
-        public string result { get; set; }
+        [JsonProperty("result")]
+        public string Result { get; set; }
     }
 }

@@ -3,12 +3,12 @@ using Newtonsoft.Json;
 
 namespace Untappd.Api.Models
 {
-    public class PendingFriendResponse
+    public class CategoryList
     {
         [JsonProperty("count")]
         public int Count { get; set; }
 
         [JsonProperty("items")]
-        public List<FriendRequest> Items { get; set; }
+        public List<Category> Items { get; set; }
     }
 }

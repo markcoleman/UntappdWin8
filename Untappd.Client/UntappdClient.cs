@@ -1,13 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Untappd.Api.Models;
 
 namespace Untappd.Api
 {
-    internal class UntappdClient
+    public class UntappdClient
     {
         private const string UntappdApiUrl = "http://api.untappd.com/v4/";
         private readonly string _accessToken;
@@ -95,9 +98,9 @@ namespace Untappd.Api
             return await GetObject("checkin/view/" + checkinId);
         }
 
-        public async Task<string> GetUserInfo()
+        public async Task<UserInfoResponse> GetUserInfo()
         {
-            return await GetObject("");
+            return await GetObject < UserInfoResponse>("user/info");
         }
 
         public async Task<string> GetUserBadges(string userName, int? offSet = null)
@@ -155,9 +158,9 @@ namespace Untappd.Api
             return await GetObject("search/beer?q=" + searchTerm);
         }
 
-        public async Task<string> GetTrending()
+        public async Task<TrendingResponse> GetTrending()
         {
-            return await GetObject("beer/trending");
+            return await GetObject < TrendingResponse>("beer/trending");
         }
 
         public async Task<string> Checkin(CheckIn checkIn)
@@ -185,19 +188,36 @@ namespace Untappd.Api
             return await GetObject("checkin/toast/" + checkInId);
         }
 
-        public async Task<string> AddToWishList(int beerId)
+        public async Task<AddOrRemoveFromWishListResponse> AddToWishList(int beerId)
         {
-            return await GetObject("user/wishlist/add");
+            const string userWishlistAdd = "user/wishlist/add";
+            return await WishListAction(beerId, userWishlistAdd);
         }
 
-        public async Task<string> RemovefromWishList(int beerId)
+        private async Task<AddOrRemoveFromWishListResponse> WishListAction(int beerId, string userWishlistAdd)
         {
-            return await GetObject("user/wishlist/remove");
+            IDictionary<string, string> queryParams = new Dictionary<string, string>();
+
+            queryParams.Add("bid", beerId.ToString(CultureInfo.InvariantCulture));
+
+
+            return await GetObject<AddOrRemoveFromWishListResponse>(userWishlistAdd, queryParams);
         }
 
-        public async Task<string> GetPendingFriends()
+        public async Task<AddOrRemoveFromWishListResponse> RemovefromWishList(int beerId)
         {
-            return await GetObject("user/pending");
+            string userWishlistRemove = "user/wishlist/remove";
+            return await WishListAction(beerId, userWishlistRemove);
+        }
+
+        public async Task<PendingFriendResponse> GetPendingFriends()
+        {
+            var s = await GetObject("user/pending");
+
+            var o = JObject.Parse(s);
+
+
+            return o.ToObject<PendingFriendResponse>();
         }
 
         public async Task<string> AcceptFriends(int friendId)
@@ -220,9 +240,19 @@ namespace Untappd.Api
             return await GetObject("friend/request/" + friendId);
         }
 
-        public async Task<string> GetNotifications()
+        public async Task<NotificationsResponse> GetNotifications()
         {
-            return await GetObject("notifications");
+            Dictionary<string, string> p = new Dictionary<string, string>();
+            p.Add("client_id", "24B1A8A8AD25CD58E5FEE94F1351153982FB2171");
+            p.Add("client_secret", "550ED8E016E29B9AECFBE1FA9F2D977D07B40AF5");
+
+
+            string s = await GetObject("notifications", p);
+
+            JToken jObject = JObject.Parse(s)["response"];
+
+
+            return jObject.ToObject<NotificationsResponse>();
         }
 
         public async Task<string> FoursquareVenueLookup(int venueId)
@@ -235,7 +265,7 @@ namespace Untappd.Api
         {
             using (var client = new HttpClient())
             {
-                string requestUri = string.Format("{0}{1}?accessToken={2}", UntappdApiUrl, apiUrlAction, _accessToken);
+                string requestUri = string.Format("{0}{1}/?access_token={2}", UntappdApiUrl, apiUrlAction, _accessToken);
 
                 if(queryParams != null)
                 {
@@ -245,6 +275,34 @@ namespace Untappd.Api
                 HttpResponseMessage response = await client.GetAsync(requestUri);
 
                 return await response.Content.ReadAsStringAsync();
+            }
+        }
+
+        private async Task<T> GetObject<T>(string apiUrlAction, IEnumerable<KeyValuePair<string, string>> queryParams = null)
+        {
+            using (var client = new HttpClient())
+            {
+                string requestUri = string.Format("{0}{1}/?access_token={2}", UntappdApiUrl, apiUrlAction, _accessToken);
+
+                if (queryParams != null)
+                {
+                    requestUri = queryParams.Aggregate(requestUri, (current, queryParam) => current + string.Format("&{0}={1}", queryParam.Key, queryParam.Value));
+                }
+
+                HttpResponseMessage response = await client.GetAsync(requestUri);
+
+                var s = await response.Content.ReadAsStringAsync();
+
+                JToken o = JObject.Parse(s)["meta"];
+                var meta = o.ToObject<Meta>();
+
+                if(meta.Code == 500)
+                {
+                    throw new InvalidOperationException(string.Format("ErrorType: {0} Detail: {1}", meta.ErrorType, meta.ErrorDetail));
+                }
+
+                JToken jObject = JObject.Parse(s)["response"];
+                return jObject.ToObject<T>();
             }
         }
     }

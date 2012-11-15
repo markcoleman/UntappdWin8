@@ -1,9 +1,16 @@
+using Newtonsoft.Json;
+
 namespace Untappd.Api.Models
 {
     public class FriendRequest
     {
-        public string friendship_hash { get; set; }
-        public string created_at { get; set; }
-        public User user { get; set; }
+        [JsonProperty("friendship_hash")]
+        public string FriendshipHash { get; set; }
+
+        [JsonProperty("created_at")]
+        public string CreatedAt { get; set; }
+
+        [JsonProperty("user")]
+        public User User { get; set; }
     }
 }

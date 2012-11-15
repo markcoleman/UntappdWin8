@@ -1,6 +1,6 @@
 namespace Untappd.Api.Models
 {
-    internal enum BeerSearchOption
+    public enum BeerSearchOption
     {
         Name,
         CheckIn

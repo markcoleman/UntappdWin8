@@ -1,9 +1,19 @@
+using Newtonsoft.Json;
+
 namespace Untappd.Api.Models
 {
     public class Contact
     {
-        public int facebook { get; set; }
-        public int foursquare { get; set; }
-        public string twitter { get; set; }
+        [JsonProperty("facebook")]
+        public string Facebook { get; set; }
+
+        [JsonProperty("foursquare")]
+        public string Foursquare { get; set; }
+
+        [JsonProperty("twitter")]
+        public string Twitter { get; set; }
+
+        [JsonProperty("url")]
+        public string Url { get; set; }
     }
 }
