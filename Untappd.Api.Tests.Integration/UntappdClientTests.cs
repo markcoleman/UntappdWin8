@@ -1,21 +1,20 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Untappd.Api.Models;
 
 namespace Untappd.Api.Tests.Integration
 {
     [TestClass]
     public class UntappdClientTests
     {
-        const string AccessToken = "716709B5F5EF67657B298A546F85CA62923687F3";
+        private const string AccessToken = "716709B5F5EF67657B298A546F85CA62923687F3";
 
         [TestMethod]
         public async Task GetNotifications_ReturnsListOfNotifications()
         {
-            
             var client = new UntappdClient(AccessToken);
 
-            var notifications = await client.GetNotifications();
+            NotificationsResponse notifications = await client.GetNotifications();
 
             Assert.IsNotNull(notifications);
         }
@@ -25,7 +24,7 @@ namespace Untappd.Api.Tests.Integration
         {
             var client = new UntappdClient(AccessToken);
 
-            var wishListResponse = await client.AddToWishList(101);
+            AddOrRemoveFromWishListResponse wishListResponse = await client.AddToWishList(101);
 
             Assert.IsNotNull(wishListResponse);
         }
@@ -37,7 +36,7 @@ namespace Untappd.Api.Tests.Integration
 
 
             //Responds with 200 but doesnt seem to do anything??
-            var notifications = await client.RemovefromWishList(101);
+            AddOrRemoveFromWishListResponse notifications = await client.RemovefromWishList(101);
 
             Assert.IsNotNull(notifications);
         }
@@ -47,7 +46,7 @@ namespace Untappd.Api.Tests.Integration
         {
             var client = new UntappdClient(AccessToken);
 
-            var trendingResponse = await client.GetTrending();
+            TrendingResponse trendingResponse = await client.GetTrending();
 
             Assert.IsNotNull(trendingResponse);
         }
@@ -55,11 +54,73 @@ namespace Untappd.Api.Tests.Integration
         [TestMethod]
         public async Task GetUserInfo_ReturnsUserInfo()
         {
-            var client = new UntappdClient(AccessToken);
+            UntappdClient client = GetClient();
 
-            var userInfoResponse = await client.GetUserInfo();
+            UserInfoResponse userInfoResponse = await client.GetUserInfo();
 
             Assert.IsNotNull(userInfoResponse);
+        }
+
+        private static UntappdClient GetClient()
+        {
+            return new UntappdClient(AccessToken);
+        }
+
+        [TestMethod]
+        public async Task BeerSearch_WithQuery()
+        {
+            UntappdClient client = GetClient();
+
+            BeerSearchResponse beers = await client.BeerSearch("Stillwater artisanal");
+
+            Assert.IsNotNull(beers);
+        }
+
+        [TestMethod]
+        public async Task Checkin_With()
+        {
+            UntappdClient client = GetClient();
+
+            var checkIn = new CheckIn
+                              {
+                                  BeerId = 107931,
+                                  GmtOffset = -5,
+                                  TimeZone = "EST",
+                                  Rating = BeerRating.ThreeStars
+                              };
+            CheckinResponse r = await client.Checkin(checkIn);
+
+            Assert.IsNotNull(r);
+        }
+
+        [TestMethod]
+        public async Task GetFriendFeed()
+        {
+            UntappdClient client = GetClient();
+
+            var r = await client.GetFriendFeed();
+
+            Assert.IsNotNull(r);
+        }
+
+        [TestMethod]
+        public async Task GetUserFeed()
+        {
+            UntappdClient client = GetClient();
+
+            var r = await client.GetUserFeed();
+
+            Assert.IsNotNull(r);
+        }
+
+        [TestMethod]
+        public async Task GetPubFeed()
+        {
+            UntappdClient client = GetClient();
+
+            var r = await client.GetThePubFeed();
+
+            Assert.IsNotNull(r);
         }
     }
 }

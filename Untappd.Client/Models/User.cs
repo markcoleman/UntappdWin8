@@ -29,7 +29,7 @@ namespace Untappd.Api.Models
         public string AccountType { get; set; }
 
         [JsonProperty("contact")]
-        public Contact Contact { get; set; }
+        public object Contact { get; set; }
 
         [JsonProperty("email_prefs")]
         public EmailPrefs EmailPrefs { get; set; }

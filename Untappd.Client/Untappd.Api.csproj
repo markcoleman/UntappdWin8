@@ -46,12 +46,15 @@
   <ItemGroup>
     <Compile Include="Models\AcceptFriendResponse.cs" />
     <Compile Include="Models\Actor.cs" />
+    <Compile Include="Models\Badges.cs" />
     <Compile Include="Models\Beer.cs" />
     <Compile Include="Models\BeerInformation.cs" />
     <Compile Include="Models\BeerList.cs" />
     <Compile Include="Models\BeerRating.cs" />
     <Compile Include="Models\BeerSearchOption.cs" />
     <Compile Include="Models\Brewery.cs" />
+    <Compile Include="Models\BreweryItem.cs" />
+    <Compile Include="Models\BreweryList.cs" />
     <Compile Include="Models\BreweryLocation.cs" />
     <Compile Include="Models\Category.cs" />
     <Compile Include="Models\CategoryList.cs" />
@@ -59,6 +62,17 @@
     <Compile Include="Models\CheckIn.cs" />
     <Compile Include="Models\AddOrRemoveFromWishListResponse.cs" />
     <Compile Include="Models\CheckinList.cs" />
+    <Compile Include="Models\BeerSearchResponse.cs" />
+    <Compile Include="Models\CheckInMedia.cs" />
+    <Compile Include="Models\CheckinResponse.cs" />
+    <Compile Include="Models\Pagination.cs" />
+    <Compile Include="Models\FollowStatus.cs" />
+    <Compile Include="Models\CheckinFeedResponse.cs" />
+    <Compile Include="Models\Homebrew.cs" />
+    <Compile Include="Models\Promotions.cs" />
+    <Compile Include="Models\PublicFeedQuery.cs" />
+    <Compile Include="Models\Rapid.cs" />
+    <Compile Include="Models\SocialSettings.cs" />
     <Compile Include="Models\Stats.cs" />
     <Compile Include="Models\MediaItem.cs" />
     <Compile Include="Models\Navigation.cs" />

@@ -20,12 +20,12 @@ namespace Untappd.Api
             _accessToken = accessToken;
         }
 
-        public async Task<string> GetFriendFeed()
+        public async Task<CheckinFeedResponse> GetFriendFeed()
         {
-            return await GetObject("checkin/recent");
+            return await GetObject<CheckinFeedResponse>("checkin/recent");
         }
 
-        public async Task<string> GetUserFeed(string userName = null, int? offSet = null, int count = 50)
+        public async Task<CheckinFeedResponse> GetUserFeed(string userName = null, int? offSet = null, int count = 25)
         {
             IDictionary<string, string> queryParams = new Dictionary<string, string>();
 
@@ -34,14 +34,47 @@ namespace Untappd.Api
                 queryParams.Add("offset", offSet.ToString());
             }
 
-            queryParams.Add("count", count.ToString(CultureInfo.InvariantCulture));
+            if (!string.IsNullOrEmpty(userName))
+            {
+                queryParams.Add("userName", userName);
+            }
 
-            return await GetObject("user/checkins", queryParams);
+            queryParams.Add("limit", count.ToString(CultureInfo.InvariantCulture));
+
+            return await GetObject < CheckinFeedResponse>("user/checkins", queryParams);
         }
 
-        public async Task<string> GetThePubFeed()
+        public async Task<CheckinFeedResponse> GetThePubFeed(PublicFeedQuery query = null)
         {
-            return await GetObject("thepub");
+            IDictionary<string, string> queryParams = new Dictionary<string, string>();
+            if (query != null)
+            {
+
+
+                if (query.Offset.HasValue)
+                {
+                    queryParams.Add("offset", offSet.ToString());
+                }
+
+                if (query.Count.HasValue)
+                {
+                    queryParams.Add("limit", offSet.ToString());
+                }
+                if (query.Since.HasValue)
+                {
+                    queryParams.Add("since", offSet.ToString());
+                }
+                if (query.Radius.HasValue)
+                {
+                    queryParams.Add("radius", offSet.ToString());
+                }
+                if (query.Latitude.HasValue && query.Longitude.HasValue)
+                {
+                    queryParams.Add("lng", offSet.ToString());
+                    queryParams.Add("lat", offSet.ToString());
+                }
+            }
+            return await GetObject<CheckinFeedResponse>("thepub", queryParams);
         }
 
         public async Task<string> GetVenueFeed(int venueId, int? offSet = null, int count = 50)
@@ -146,16 +179,23 @@ namespace Untappd.Api
             return await GetObject("search/brewwery?q=" + searchTerm);
         }
 
-        public async Task<string> BeerSearch(string searchTerm, BeerSearchOption? beerSearchOption = null)
+        public async Task<BeerSearchResponse> BeerSearch(string searchTerm, BeerSearchOption? beerSearchOption = null)
         {
-            IDictionary<string, string> queryParams = new Dictionary<string, string>();
+            var queryParams = new Dictionary<string, string>();
+
 
             if (beerSearchOption != null)
             {
                 queryParams.Add("sort", beerSearchOption.ToString());
             }
 
-            return await GetObject("search/beer?q=" + searchTerm);
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                queryParams.Add("q", searchTerm);
+            }
+
+
+            return await GetObject<BeerSearchResponse>("search/beer", queryParams);
         }
 
         public async Task<TrendingResponse> GetTrending()
@@ -163,9 +203,57 @@ namespace Untappd.Api
             return await GetObject<TrendingResponse>("beer/trending");
         }
 
-        public async Task<string> Checkin(CheckIn checkIn)
+        public async Task<CheckinResponse> Checkin(CheckIn checkIn)
         {
-            return await GetObject("checkin/add");
+            var queryParams = new Dictionary<string, string>
+                                  {
+                                      {
+                                          "gmt_offset",
+                                          checkIn.GmtOffset.ToString(
+                                              CultureInfo.InvariantCulture)
+                                      },
+                                      {"timezone", checkIn.TimeZone},
+                                      {
+                                          "bid",
+                                          checkIn.BeerId.ToString(CultureInfo.InvariantCulture)
+                                      }
+                                  };
+
+            if (!string.IsNullOrEmpty(checkIn.FourSquareId))
+            {
+                queryParams.Add("foursquare_id", checkIn.FourSquareId);
+            }
+
+            if (checkIn.GeoLat.HasValue && checkIn.GeoLng.HasValue)
+            {
+                queryParams.Add("geolat", checkIn.GeoLat.ToString());
+                queryParams.Add("geolng", checkIn.GeoLng.ToString());
+            }
+            if (!string.IsNullOrEmpty(checkIn.Shout))
+            {
+                queryParams.Add("shout", checkIn.Shout);
+            }
+
+            if (checkIn.Rating.HasValue)
+            {
+                queryParams.Add("rating ", ((int) checkIn.Rating).ToString(CultureInfo.InvariantCulture));
+            }
+
+            if (checkIn.PostToFacebook)
+            {
+                queryParams.Add("facebook ", "on");
+            }
+
+            if (checkIn.PostToTwitter)
+            {
+                queryParams.Add("twitter ", "on");
+            }
+            if (checkIn.PostToFourSquare)
+            {
+                queryParams.Add("foursquare ", "on");
+            }
+
+            return await PostObject<CheckinResponse>("checkin/add", queryParams);
         }
 
         public async Task<string> AddComment(int checkInId, string comment)
@@ -243,10 +331,10 @@ namespace Untappd.Api
         public async Task<NotificationsResponse> GetNotifications()
         {
             var queryParams = new Dictionary<string, string>
-                        {
-                            {"client_id", "24B1A8A8AD25CD58E5FEE94F1351153982FB2171"},
-                            {"client_secret", "550ED8E016E29B9AECFBE1FA9F2D977D07B40AF5"}
-                        };
+                                  {
+                                      {"client_id", "24B1A8A8AD25CD58E5FEE94F1351153982FB2171"},
+                                      {"client_secret", "550ED8E016E29B9AECFBE1FA9F2D977D07B40AF5"}
+                                  };
 
             return await GetObject<NotificationsResponse>("notifications", queryParams);
         }
@@ -258,7 +346,8 @@ namespace Untappd.Api
 
 
         private async Task<string> GetObject(string apiUrlAction,
-                                             IEnumerable<KeyValuePair<string, string>> queryParams = null)
+                                             IEnumerable<KeyValuePair<string, string>> queryParams = null
+            )
         {
             using (var client = new HttpClient())
             {
@@ -272,30 +361,65 @@ namespace Untappd.Api
                                                        string.Format("&{0}={1}", queryParam.Key, queryParam.Value));
                 }
 
+
                 HttpResponseMessage response = await client.GetAsync(requestUri);
 
-                string apiResponse = await response.Content.ReadAsStringAsync();
-
-                JToken metaToken = JObject.Parse(apiResponse)["meta"];
-                var meta = metaToken.ToObject<Meta>();
-
-                if (meta.Code == 500)
-                {
-                    string message = string.Format("ErrorType: {0} Detail: {1}", meta.ErrorType, meta.ErrorDetail);
-                    throw new InvalidOperationException(message);
-                }
-
-                return apiResponse;
+                return await HandleResponse(response);
             }
         }
 
         private async Task<T> GetObject<T>(string apiUrlAction,
-                                           IEnumerable<KeyValuePair<string, string>> queryParams = null)
+                                           IEnumerable<KeyValuePair<string, string>> queryParams = null,
+                                           bool? post = false)
         {
             string apiResponse = await GetObject(apiUrlAction, queryParams);
 
             JToken responseToken = JObject.Parse(apiResponse)["response"];
             return responseToken.ToObject<T>();
+        }
+
+        private async Task<T> PostObject<T>(string apiUrlAction, IEnumerable<KeyValuePair<string, string>> postParams)
+        {
+            string apiResponse = await PostObject(apiUrlAction, postParams);
+
+            JToken responseToken = JObject.Parse(apiResponse)["response"];
+            return responseToken.ToObject<T>();
+        }
+
+        private async Task<string> PostObject(string apiUrlAction,
+                                              IEnumerable<KeyValuePair<string, string>> postParams = null)
+        {
+            using (var client = new HttpClient())
+            {
+                string requestUri = string.Format("{0}{1}/?access_token={2}", UntappdApiUrl, apiUrlAction, _accessToken);
+
+
+                var c = new FormUrlEncodedContent(postParams);
+                HttpResponseMessage response = await client.PostAsync(requestUri, c).ContinueWith((post) =>
+                                                                                                  post.Result
+                                                                                                      .EnsureSuccessStatusCode
+                                                                                                      ()
+                                                         );
+
+
+                return await HandleResponse(response);
+            }
+        }
+
+        private static async Task<string> HandleResponse(HttpResponseMessage response)
+        {
+            string apiResponse = await response.Content.ReadAsStringAsync();
+
+            JToken metaToken = JObject.Parse(apiResponse)["meta"];
+            var meta = metaToken.ToObject<Meta>();
+
+            if (meta.Code == 500)
+            {
+                string message = string.Format("ErrorType: {0} Detail: {1}", meta.ErrorType, meta.ErrorDetail);
+                throw new InvalidOperationException(message);
+            }
+
+            return apiResponse;
         }
     }
 }
