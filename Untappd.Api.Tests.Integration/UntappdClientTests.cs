@@ -1,36 +1,37 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Untappd.Api.Tests.Integration
 {
     [TestClass]
-    public class UnitTest1
+    public class UntappdClientTests
     {
         const string AccessToken = "716709B5F5EF67657B298A546F85CA62923687F3";
 
         [TestMethod]
-        public void TestMethod1()
+        public async Task GetNotifications_ReturnsListOfNotifications()
         {
             
             var client = new UntappdClient(AccessToken);
 
-            var notifications = client.GetNotifications().Result;
+            var notifications = await client.GetNotifications();
 
             Assert.IsNotNull(notifications);
         }
 
         [TestMethod]
-        public void AddWishList()
+        public async Task AddToWishList_AddsBeerToWishList()
         {
             var client = new UntappdClient(AccessToken);
 
-            var wishListResponse = client.AddToWishList(101).Result;
+            var wishListResponse = await client.AddToWishList(101);
 
             Assert.IsNotNull(wishListResponse);
         }
 
         [TestMethod]
-        public void RemoveWishList()
+        public async Task RemoveFromWishList_RemovesItem()
         {
             var client = new UntappdClient(AccessToken);
 
@@ -42,21 +43,21 @@ namespace Untappd.Api.Tests.Integration
         }
 
         [TestMethod]
-        public void Trending()
+        public async Task GetTrending_ReturnsTrendingBeers()
         {
             var client = new UntappdClient(AccessToken);
 
-            var trendingResponse = client.GetTrending().Result;
+            var trendingResponse = await client.GetTrending();
 
             Assert.IsNotNull(trendingResponse);
         }
 
         [TestMethod]
-        public void UserInfo()
+        public async Task GetUserInfo_ReturnsUserInfo()
         {
             var client = new UntappdClient(AccessToken);
 
-            var userInfoResponse = client.GetUserInfo().Result;
+            var userInfoResponse = await client.GetUserInfo();
 
             Assert.IsNotNull(userInfoResponse);
         }
