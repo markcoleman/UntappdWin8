@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Untappd.Api.Models;
 
@@ -30,7 +29,7 @@ namespace Untappd.Api
         {
             IDictionary<string, string> queryParams = new Dictionary<string, string>();
 
-            if(offSet != null)
+            if (offSet != null)
             {
                 queryParams.Add("offset", offSet.ToString());
             }
@@ -100,7 +99,7 @@ namespace Untappd.Api
 
         public async Task<UserInfoResponse> GetUserInfo()
         {
-            return await GetObject < UserInfoResponse>("user/info");
+            return await GetObject<UserInfoResponse>("user/info");
         }
 
         public async Task<string> GetUserBadges(string userName, int? offSet = null)
@@ -125,7 +124,8 @@ namespace Untappd.Api
             return await GetObject("user/wishlist/" + userName);
         }
 
-        public async Task<string> GetUserDistinctBeers(string userName, UserSortOption? userSort = null, int? offSet = null)
+        public async Task<string> GetUserDistinctBeers(string userName, UserSortOption? userSort = null,
+                                                       int? offSet = null)
         {
             IDictionary<string, string> queryParams = new Dictionary<string, string>();
 
@@ -133,7 +133,7 @@ namespace Untappd.Api
             {
                 queryParams.Add("offset", offSet.ToString());
             }
-            if(userSort != null)
+            if (userSort != null)
             {
                 queryParams.Add("sort", userSort.ToString());
             }
@@ -160,7 +160,7 @@ namespace Untappd.Api
 
         public async Task<TrendingResponse> GetTrending()
         {
-            return await GetObject < TrendingResponse>("beer/trending");
+            return await GetObject<TrendingResponse>("beer/trending");
         }
 
         public async Task<string> Checkin(CheckIn checkIn)
@@ -212,9 +212,9 @@ namespace Untappd.Api
 
         public async Task<PendingFriendResponse> GetPendingFriends()
         {
-            var s = await GetObject("user/pending");
+            string s = await GetObject("user/pending");
 
-            var o = JObject.Parse(s);
+            JObject o = JObject.Parse(s);
 
 
             return o.ToObject<PendingFriendResponse>();
@@ -242,17 +242,13 @@ namespace Untappd.Api
 
         public async Task<NotificationsResponse> GetNotifications()
         {
-            Dictionary<string, string> p = new Dictionary<string, string>();
-            p.Add("client_id", "24B1A8A8AD25CD58E5FEE94F1351153982FB2171");
-            p.Add("client_secret", "550ED8E016E29B9AECFBE1FA9F2D977D07B40AF5");
+            var queryParams = new Dictionary<string, string>
+                        {
+                            {"client_id", "24B1A8A8AD25CD58E5FEE94F1351153982FB2171"},
+                            {"client_secret", "550ED8E016E29B9AECFBE1FA9F2D977D07B40AF5"}
+                        };
 
-
-            string s = await GetObject("notifications", p);
-
-            JToken jObject = JObject.Parse(s)["response"];
-
-
-            return jObject.ToObject<NotificationsResponse>();
+            return await GetObject<NotificationsResponse>("notifications", queryParams);
         }
 
         public async Task<string> FoursquareVenueLookup(int venueId)
@@ -261,24 +257,8 @@ namespace Untappd.Api
         }
 
 
-        private async Task<string> GetObject(string apiUrlAction, IEnumerable<KeyValuePair<string, string>> queryParams = null)
-        {
-            using (var client = new HttpClient())
-            {
-                string requestUri = string.Format("{0}{1}/?access_token={2}", UntappdApiUrl, apiUrlAction, _accessToken);
-
-                if(queryParams != null)
-                {
-                    requestUri = queryParams.Aggregate(requestUri, (current, queryParam) => current + string.Format("&{0}={1}", queryParam.Key, queryParam.Value));
-                }
-
-                HttpResponseMessage response = await client.GetAsync(requestUri);
-
-                return await response.Content.ReadAsStringAsync();
-            }
-        }
-
-        private async Task<T> GetObject<T>(string apiUrlAction, IEnumerable<KeyValuePair<string, string>> queryParams = null)
+        private async Task<string> GetObject(string apiUrlAction,
+                                             IEnumerable<KeyValuePair<string, string>> queryParams = null)
         {
             using (var client = new HttpClient())
             {
@@ -286,24 +266,36 @@ namespace Untappd.Api
 
                 if (queryParams != null)
                 {
-                    requestUri = queryParams.Aggregate(requestUri, (current, queryParam) => current + string.Format("&{0}={1}", queryParam.Key, queryParam.Value));
+                    requestUri = queryParams.Aggregate(requestUri,
+                                                       (current, queryParam) =>
+                                                       current +
+                                                       string.Format("&{0}={1}", queryParam.Key, queryParam.Value));
                 }
 
                 HttpResponseMessage response = await client.GetAsync(requestUri);
 
-                var s = await response.Content.ReadAsStringAsync();
+                string apiResponse = await response.Content.ReadAsStringAsync();
 
-                JToken o = JObject.Parse(s)["meta"];
-                var meta = o.ToObject<Meta>();
+                JToken metaToken = JObject.Parse(apiResponse)["meta"];
+                var meta = metaToken.ToObject<Meta>();
 
-                if(meta.Code == 500)
+                if (meta.Code == 500)
                 {
-                    throw new InvalidOperationException(string.Format("ErrorType: {0} Detail: {1}", meta.ErrorType, meta.ErrorDetail));
+                    string message = string.Format("ErrorType: {0} Detail: {1}", meta.ErrorType, meta.ErrorDetail);
+                    throw new InvalidOperationException(message);
                 }
 
-                JToken jObject = JObject.Parse(s)["response"];
-                return jObject.ToObject<T>();
+                return apiResponse;
             }
+        }
+
+        private async Task<T> GetObject<T>(string apiUrlAction,
+                                           IEnumerable<KeyValuePair<string, string>> queryParams = null)
+        {
+            string apiResponse = await GetObject(apiUrlAction, queryParams);
+
+            JToken responseToken = JObject.Parse(apiResponse)["response"];
+            return responseToken.ToObject<T>();
         }
     }
 }

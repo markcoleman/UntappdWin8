@@ -37,9 +37,9 @@ namespace Untappd.Api.Tests.Integration
 
 
             //Responds with 200 but doesnt seem to do anything??
-            //var notifications = client.RemovefromWishList(101).Result;
+            var notifications = await client.RemovefromWishList(101);
 
-            //Assert.IsNotNull(notifications);
+            Assert.IsNotNull(notifications);
         }
 
         [TestMethod]
