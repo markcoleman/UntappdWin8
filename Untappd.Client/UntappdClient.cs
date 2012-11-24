@@ -41,7 +41,7 @@ namespace Untappd.Api
 
             queryParams.Add("limit", count.ToString(CultureInfo.InvariantCulture));
 
-            return await GetObject < CheckinFeedResponse>("user/checkins", queryParams);
+            return await GetObject<CheckinFeedResponse>("user/checkins", queryParams);
         }
 
         public async Task<CheckinFeedResponse> GetThePubFeed(PublicFeedQuery query = null)
@@ -49,35 +49,33 @@ namespace Untappd.Api
             IDictionary<string, string> queryParams = new Dictionary<string, string>();
             if (query != null)
             {
-
-
                 if (query.Offset.HasValue)
                 {
-                    queryParams.Add("offset", offSet.ToString());
+                    queryParams.Add("offset", query.Offset.ToString());
                 }
 
                 if (query.Count.HasValue)
                 {
-                    queryParams.Add("limit", offSet.ToString());
+                    queryParams.Add("limit", query.Count.ToString());
                 }
                 if (query.Since.HasValue)
                 {
-                    queryParams.Add("since", offSet.ToString());
+                    queryParams.Add("since", query.Since.ToString());
                 }
                 if (query.Radius.HasValue)
                 {
-                    queryParams.Add("radius", offSet.ToString());
+                    queryParams.Add("radius", query.Radius.ToString());
                 }
                 if (query.Latitude.HasValue && query.Longitude.HasValue)
                 {
-                    queryParams.Add("lng", offSet.ToString());
-                    queryParams.Add("lat", offSet.ToString());
+                    queryParams.Add("lng", query.Longitude.ToString());
+                    queryParams.Add("lat", query.Latitude.ToString());
                 }
             }
             return await GetObject<CheckinFeedResponse>("thepub", queryParams);
         }
 
-        public async Task<string> GetVenueFeed(int venueId, int? offSet = null, int count = 50)
+        public async Task<CheckinFeedResponse> GetVenueFeed(int venueId, int? since = null, int? offSet = null, int count = 25)
         {
             IDictionary<string, string> queryParams = new Dictionary<string, string>();
 
@@ -86,17 +84,16 @@ namespace Untappd.Api
                 queryParams.Add("offset", offSet.ToString());
             }
 
+            if (since != null)
+            {
+                queryParams.Add("since", since.ToString());
+            }
             queryParams.Add("count", count.ToString(CultureInfo.InvariantCulture));
 
-            return await GetObject("venue/checkins/" + venueId, queryParams);
+            return await GetObject < CheckinFeedResponse>("venue/checkins/" + venueId, queryParams);
         }
 
-        public async Task<string> GetBeerFeed(int beerId)
-        {
-            return await GetObject("beer/info/" + beerId);
-        }
-
-        public async Task<string> GetBreweryCheckins(int breweryId, int? offSet = null, int count = 50)
+        public async Task<string> GetBeerFeed(int beerId, int? since = null, int? offSet = null, int count = 25)
         {
             IDictionary<string, string> queryParams = new Dictionary<string, string>();
 
@@ -105,6 +102,29 @@ namespace Untappd.Api
                 queryParams.Add("offset", offSet.ToString());
             }
 
+            if (since != null)
+            {
+                queryParams.Add("since", since.ToString());
+            }
+            queryParams.Add("count", count.ToString(CultureInfo.InvariantCulture));
+
+            return await GetObject("beer/info/" + beerId, queryParams);
+           
+        }
+
+        public async Task<string> GetBreweryCheckins(int breweryId, int? since = null, int? offSet = null, int count = 25)
+        {
+            IDictionary<string, string> queryParams = new Dictionary<string, string>();
+
+            if (offSet != null)
+            {
+                queryParams.Add("offset", offSet.ToString());
+            }
+
+            if (since != null)
+            {
+                queryParams.Add("since", since.ToString());
+            }
             queryParams.Add("count", count.ToString(CultureInfo.InvariantCulture));
 
             return await GetObject("brewery/checkings/" + breweryId, queryParams);

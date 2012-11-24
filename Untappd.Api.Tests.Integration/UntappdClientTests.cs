@@ -122,5 +122,35 @@ namespace Untappd.Api.Tests.Integration
 
             Assert.IsNotNull(r);
         }
+
+        [TestMethod]
+        public async Task GetVenueFeed()
+        {
+            UntappdClient client = GetClient();
+
+            var r = await client.GetVenueFeed(25423);
+
+            Assert.IsNotNull(r);
+        }
+
+        [TestMethod]
+        public async Task GetBeerFeed()
+        {
+            UntappdClient client = GetClient();
+
+            var r = await client.GetBeerFeed(9257);
+
+            Assert.IsNotNull(r);
+        }
+
+        [TestMethod]
+        public async Task GetBreweryCheckins()
+        {
+            UntappdClient client = GetClient();
+
+            var r = await client.GetBreweryCheckins(1658);
+
+            Assert.IsNotNull(r);
+        }
     }
 }
