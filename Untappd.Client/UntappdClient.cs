@@ -12,6 +12,7 @@ namespace Untappd.Api
     public class UntappdClient
     {
         private const string UntappdApiUrl = "http://api.untappd.com/v4/";
+
         private readonly string _accessToken;
 
 
@@ -352,8 +353,8 @@ namespace Untappd.Api
         {
             var queryParams = new Dictionary<string, string>
                                   {
-                                      {"client_id", "24B1A8A8AD25CD58E5FEE94F1351153982FB2171"},
-                                      {"client_secret", "550ED8E016E29B9AECFBE1FA9F2D977D07B40AF5"}
+                                      {"client_id", Configuration.ClientId},
+                                      {"client_secret", Configuration.ClientSecret}
                                   };
 
             return await GetObject<NotificationsResponse>("notifications", queryParams);

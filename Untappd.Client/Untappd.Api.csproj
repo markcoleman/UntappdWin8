@@ -99,6 +99,7 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Configuration.cs" />
     <Compile Include="Models\AcceptFriendResponse.cs" />
     <Compile Include="Models\Actor.cs" />
     <Compile Include="Models\AddOrRemoveFromWishListResponse.cs" />

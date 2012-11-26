@@ -1,22 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using Untappd.Api;
 using UntappdForWIn8.Common;
+using Windows.Foundation;
+using Windows.Foundation.Collections;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Navigation;
 
-// The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
+// The Basic Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234237
 
 namespace UntappdForWIn8
 {
     /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// A basic page that provides characteristics common to most applications.
     /// </summary>
-    public sealed partial class MainPage :  UntappdForWIn8.Common.LayoutAwarePage
+    public sealed partial class BeerDetailsPage : UntappdForWIn8.Common.LayoutAwarePage
     {
-        
-
-        public MainPage()
+        public BeerDetailsPage()
         {
             this.InitializeComponent();
         }
@@ -30,20 +36,14 @@ namespace UntappdForWIn8
         /// </param>
         /// <param name="pageState">A dictionary of state preserved by this page during an earlier
         /// session.  This will be null the first time a page is visited.</param>
-        protected override async void LoadState(Object navigationParameter, Dictionary<String, Object> pageState)
+        protected override void LoadState(Object navigationParameter, Dictionary<String, Object> pageState)
         {
-            var client = new Untappd.Api.UntappdClient(Configuration.AccessToken);
-            var response = await client.GetFriendFeed();
-            var list = response.Checkins.Items.Select(i => new
-                                                               {
-                                                                   Title = i.Beer.BeerName, 
-                                                                   Subtitle = i.User.FirstName + " " + i.User.LastName
-                                                               }).ToList();
-            this.DefaultViewModel["friendBeers"] = list;
+            BeerSearchItem item = (BeerSearchItem)navigationParameter;
+            this.DefaultViewModel["Title"] = item.Title;
+            this.DefaultViewModel["Subtitle"] = item.Subtitle;
+            this.DefaultViewModel["Description"] = item.Description;
 
-            var u = await client.GetUserFeed();
-
-            this.DefaultViewModel["userFeed"] = response.Checkins.Items;
+            this.DefaultViewModel["beerItem"] = item;
         }
 
         /// <summary>
@@ -54,11 +54,6 @@ namespace UntappdForWIn8
         /// <param name="pageState">An empty dictionary to be populated with serializable state.</param>
         protected override void SaveState(Dictionary<String, Object> pageState)
         {
-        }
-
-        private void ResultsGridView_OnItemClick(object sender, ItemClickEventArgs e)
-        {
-           
         }
     }
 }

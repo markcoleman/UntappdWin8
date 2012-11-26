@@ -7,7 +7,7 @@ namespace Untappd.Api.Tests.Integration
     [TestClass]
     public class UntappdClientTests
     {
-        private const string AccessToken = "716709B5F5EF67657B298A546F85CA62923687F3";
+        private const string AccessToken = Configuration.AccessToken;
 
         [TestMethod]
         public async Task GetNotifications_ReturnsListOfNotifications()
